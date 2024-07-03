@@ -1,0 +1,106 @@
+OpenFilesystem:
+    xor ax, ax
+    xor bx, bx
+    xor dx, dx
+    xor cx, cx
+    xor si, si
+    xor di, di
+
+    mov ah, 0x02
+    mov al, 1
+    mov ch, 0x00
+    mov cl, 6
+    mov dh, 0x00
+    mov dl, 0x80 ; assuming c drive
+    mov bx, 0x9F0
+    mov es, bx
+    xor bx, bx
+    int 13h
+    jc .error
+
+    
+    cmp [0x9f00], byte 0xAA ; check for file system record
+    jne .error    
+
+    ;attempt to load the main file system 
+    mov ah, 0x02
+    mov al, byte [0x9f01]
+    add cl, 1
+    mov bx, 0x1c0
+    mov es,bx
+    xor bx, bx
+    int 13h
+    jc .error
+
+    cmp [0x1c00], byte 0xbd ; check for main file system byte
+    jne .error
+
+
+    ret
+    .error:
+        
+        jmp $
+
+
+
+LoadFileByTag: ; di where to load it | al is tag, al will be set to 0 if fail
+    mov si, 0x1c01
+    jmp .error
+    ;jmp .notfound
+    .gettofiles:
+        inc si
+        cmp [si], byte 0xBB
+        jne .gettofiles
+        inc si
+        inc si
+    .lookloop:
+        cmp [si], al
+        je .foundfile
+        
+        .findnextfile:
+            inc si
+            cmp si, 0x3000
+            je .error
+            cmp [si], byte 0xAF
+            jne .findnextfile
+            inc si
+            cmp [si], byte 0xfa
+            jne .findnextfile
+            inc si 
+            
+            jmp .lookloop
+        
+        
+
+    .foundfile:
+        inc si
+        .copyloop:
+            mov al, [si]
+            cmp [si], byte 0xAF
+            je .exit
+            mov [di], al
+            inc si
+            inc di
+            jmp .copyloop
+        .exit:
+            
+            ret
+        .error:
+            
+            mov al, 0
+            
+            ret
+            
+
+
+
+
+
+NameBuffer: times 20 db 0
+PathBuffer: times 50 db 0
+
+FolderIdList times 100 db 0
+
+
+errormsg db 'failed to init the file system KERNAL PAINC', 0
+testmsg db 'Rebuilt file system in memory ', 0
