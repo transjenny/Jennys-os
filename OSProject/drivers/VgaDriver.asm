@@ -1,6 +1,6 @@
 WriteChar:
-    mov bx, 0xb800
-    mov es, bx
+    mov ax, 0xB800  ; Set data segment to video memory segment
+    mov es, ax
     mov byte [es:di], al
     
     ret

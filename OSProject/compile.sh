@@ -1,4 +1,4 @@
-
+cp drivers/filesystem.asm drivers/filesystemAPPS.asm
 rm -rf *.bin
 nasm boot.asm -f bin -o boot.bin
 nasm kernel.asm -f bin -o kernel.bin

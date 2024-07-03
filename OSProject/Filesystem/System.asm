@@ -2,7 +2,7 @@
 db 0xbd ; so the OS knows this is a file system and not a ramdom thing in the way
 db 0x33, 0xdd, 0x7F
 db 0x33, 0xdd, 0x10
-
+db 0x33, 0xdd, 0x44
 db 0xBB ; start of files and folders
 
 
@@ -20,46 +20,36 @@ KernalEntry:
         db 0x7F
         db 255
         db 4
+        
         %define filestart $$
 
-        
-        
-        cli
-        ;cli
-        ;mov ax, 0xD000
-        ;mov ss, ax
-        ;mov sp, 0xDfff
-        ;sti
-
+    
         xor ax, ax
-        xor bx,bx
+        xor bx, bx
         xor cx, cx
-        xor si, si
-        xor di, di
         xor dx, dx
-        
+        mov di, 0x00
+        mov si, 0x00
 
         mov al, 0x10
 
-        mov di, GraphicsDrivers
-        call LoadFileByTag
+        
+        mov al, 0xCC
+        mov di, CommandLineBuffer
+        call Filesystem.LoadFileByTag
+        ;cmp al, 0
+        ;je ERROR
 
-        mov di, GraphicsDrivers
-        mov [0x09ff], byte 0
-        
-        call GraphicsDrivers
-    
-        mov [0x09ff], byte 1
-        call GraphicsDrivers
-        
-        mov [0x09ff], byte 3
-        mov si, bootmsg
-        call WriteStringToGraphicsBuffer
-        mov [0x09fd], byte 4
-        call GraphicsDrivers
+        jmp CommandLineBuffer
+
+      
 
         jmp $
-        
+        ERROR:
+            mov al, 'E'
+            mov dx, 0x3F8
+            out dx, al 
+            jmp $
         WriteStringToGraphicsBuffer: ;string in si
             mov di, 0x0800
             .writeloop:
@@ -70,10 +60,12 @@ KernalEntry:
                 cmp [si], byte 0
                 jne .writeloop
                 ret
-    
-        %include "drivers/filesystem.asm" 
+        Filesystem:
+            %include "drivers/filesystem.asm" 
 
-        GraphicsDrivers: times 1000 db 0
+        ;GraphicsDrivers: times 500 db 0
+
+        CommandLineBuffer: times 500 db 0
         
         bootmsg db 'hello world', 0
 
@@ -82,10 +74,44 @@ KernalEntry:
         times 1240-size db 0
         db 0xAF ; end of file
         db 0xFA
+
+Commandline:
+    db 0xCC
+    db 0xFD
+             
+
+    mov di, GraphicsDriversCMD
+    mov al, 0x10
+    call CMDFS.LoadFileByTag
+    cmp al, 0
+    je ERRORREAD
+
+
+    mov [0x09FF], byte 1
+    call GraphicsDriversCMD
+    
+
+
+
+    ERRORREAD:
+        mov al, 'E'
+        mov dx, 0x3F8  ; Transmit data
+        out dx, al
+        hlt
+
+    mov [0x09ff], byte 0
+    GraphicsDriversCMD: times 500 db 0
+    CMDFS:
+        %include "drivers/filesystemAPPS.asm"
+    db 0xAF
+    db 0xFA
+
+
 VGAdriver:
     db 0x10; file tag
+    db 0xFD
 
-    call resetcpuresistors
+    ;call resetcpuresistors
 
     cmp [0x09ff], byte 0
     je .clearscreenfunc
@@ -98,20 +124,27 @@ VGAdriver:
     ret
 
     .clearscreenfunc:
-        call resetcpuresistors
+        ;call resetcpuresistors
         call clearScreen
         ret
     .disablecursor:
         
-        call DisableBiosCursor
+        mov dx, 0x3D4     ; DX = VGA register port
+        mov al, 0x0A      ; AL = Cursor Start Register
+        out dx, al        ; Set index to Cursor Start Register
+
+        mov dx, 0x3D5     ; DX = VGA data port
+        in al, dx         ; Read current value
+        or al, 0x20       ; Set bit 5 (bit 5 is usually the cursor disable bit)
+        out dx, al        ; Write modified value back
         ret
     .writeCharToScreen:
+        mov ah, 0x00
         mov al, byte [0x09fe]
-
+        mov bh, 0x00
         mov bl, byte [0x09fd]
         mov di, bx
         call WriteChar
-        mov [0x09ff], byte 0xff
         ret
     .WriteStringToScreen:
         mov si, 0x0800
