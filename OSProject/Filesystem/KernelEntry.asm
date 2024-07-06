@@ -13,7 +13,8 @@ _KernelEntry:
     
     call DisableBiosCursor
     call ClearScreen
-    call PrintHelloworld
+
+    jmp CommandLine
 
     hlt
     jmp $
@@ -41,7 +42,6 @@ PrintstringTOSERIAL:
     ret
 
 PrintStringToScreen:
-    mov di, 0
     .writeloop:
         mov al, [si]
         call printChar
@@ -79,3 +79,24 @@ printChar:
     mov es, dx
     mov [es:di], byte al
     ret
+
+
+
+
+
+CommandLine:
+    mov si, .bootmsg
+    mov di, 0
+    call PrintStringToScreen
+
+    mov di, 160
+    mov al, '$'
+    call printChar
+    inc di
+    call EnablePS2
+    call GrabInput
+
+
+    hlt
+    .bootmsg db '  Welcome to the comandline in jenny os!', 0
+    %include "../drivers/ps2Driver.asm"

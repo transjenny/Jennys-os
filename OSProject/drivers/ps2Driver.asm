@@ -1,3 +1,10 @@
+EnablePS2:
+    mov al, 0xAE
+    mov dx, 0x64
+    out dx, al
+    ret
+
+
 GrabInput:
     in al, 0x64
     test al, 0x01
@@ -5,13 +12,17 @@ GrabInput:
     
     in al, 0x60
 
+
+
     call convert_ascii
+    mov di, 0
+    call printChar
     cmp al, 0x00
     je .no_input
     cmp al, 0x0D
     je .NotLetter
     
-    call WriteChar
+    
 
     ret
     .no_input:
