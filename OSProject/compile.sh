@@ -1,11 +1,13 @@
 cp drivers/filesystem.asm drivers/filesystemAPPS.asm
 rm -rf *.bin
+rm -rf Filesystem/*.bin
+rm -rf Filesystem/*.o
+
 nasm boot.asm -f bin -o boot.bin
 nasm kernel.asm -f bin -o kernel.bin
 
 cd Filesystem
-gcc -march=i386 -m16 -ffreestanding KernelEntry.c -c  -o kernel.o 
-ld kernel.o -m elf_i386 -Ttext 0x1c00 -o Kernel.bin 
+nasm KernelEntry.asm -f bin -o Kernel.bin
 python BuildFilesystem.py
 cp system.bin ../system.bin
 cd ..

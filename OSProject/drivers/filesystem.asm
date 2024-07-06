@@ -1,11 +1,5 @@
 
 .OpenFilesystem:
-    xor ax, ax
-    xor bx, bx
-    xor dx, dx
-    xor cx, cx
-    xor si, si
-    xor di, di
 
     mov ah, 0x02
     mov al, 1
@@ -51,7 +45,7 @@
         jne .gettofiles
         inc si
     .lookloop:
-        cmp [si], byte al
+        cmp [si], al
         je .foundfile
         
         .findnextfile:
@@ -69,24 +63,25 @@
         
 
     .foundfile:
-        inc si
-        cmp [si], byte 0xFD
-        jne .findnextfile
         inc si 
+        mov di, TESTFILEBUFFER
+        mov bx, 0
         .copyloop:
-            mov al, [si]
+            mov al, byte [si]
             cmp [si], byte 0xAF
             je .exit
-            mov [di], al
+            mov [di+bx],byte al
             inc si
-            inc di
+            inc bx
+            cmp bx, 20
+            je .exit
+            
             jmp .copyloop
         .exit:
             
             ret
         .error:
             
-            mov al, 0
             
             ret
             

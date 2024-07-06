@@ -25,19 +25,19 @@ OpenFilesystem:
     mov cl, 6
     mov dh, 0x00
     mov dl, 0x80 ; assuming c drive
-    mov bx, 0x9F0
+    mov bx, 0x9c0
     mov es, bx
     xor bx, bx
     int 13h
     jc .error
 
     
-    cmp [0x9f00], byte 0xAA ; check for file system record
+    cmp [0x9c00], byte 0xAA ; check for file system record
     jne .error    
 
     ;attempt to load the main file system 
     mov ah, 0x02
-    mov al, byte [0x9f01]
+    mov al, byte [0x9c01]
     add cl, 1
     mov bx, 0x1c0
     mov es,bx

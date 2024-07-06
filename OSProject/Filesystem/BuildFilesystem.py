@@ -1,25 +1,31 @@
 
-f = open("system.bin", 'wb')
-f1 = open("Kernel.bin", 'rb')
+try:
+
+    f = open("system.bin", 'wb')
+    f1 = open("Kernel.bin", 'rb')
 
 
-kernelheader = bytes([0xbd,0x33, 0xdd, 0x7f, 0xbb, 0x7f]) # show end of index and define 
+    kernelheader = bytes([0xbd,0x33, 0xdd, 0x7f, 0xbb, 0x7f]) # show end of index and define 
 
 
-EndoffileHEADER = bytes([0xAF, 0xFA]) # end of kernel header
+    EndoffileHEADER = bytes([0xAF, 0xFA]) # end of kernel header
 
-kernel = f1.read()
+    kernel = f1.read()
 
 
-filesystem = kernelheader  + kernel + EndoffileHEADER
+    TestHeader = bytes([0x10])
 
-padding = b'\x00' * (20480-len(filesystem))
-filesystem+=padding
+    filesystem = kernelheader  + kernel + EndoffileHEADER + TestHeader + bytes('TEST123', 'ascii')+ EndoffileHEADER
 
-f2 = open("system.bin", 'wb')
-f2.write(filesystem)
+    padding = b'\x00' * (20480-len(filesystem))
+    filesystem+=padding
 
-f.close()
-f1.close()
-f2.close()
-print("Built system file system" )
+    f2 = open("system.bin", 'wb')
+    f2.write(filesystem)
+
+    f.close()
+    f1.close()
+    f2.close()
+    print("Built system file system" )
+except:
+    print("FAILED TO BUILD FILE SYSTEM")
