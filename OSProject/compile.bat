@@ -1,4 +1,5 @@
 @ECHO off
+set PATH=C:\Users\trans\AppData\Local\bin\NASM;%PATH%	
 del *.bin
 
 
