@@ -64,16 +64,13 @@
 
     .foundfile:
         inc si 
-        mov di, TESTFILEBUFFER
-        mov bx, 0
         .copyloop:
             mov al, byte [si]
             cmp [si], byte 0xAF
             je .exit
             mov [di+bx],byte al
             inc si
-            inc bx
-            cmp bx, 20
+
             je .exit
             
             jmp .copyloop

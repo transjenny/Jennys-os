@@ -1,12 +1,14 @@
 [org 0x7fff]
 
 
-_KernelEntry:
+_KernelEntry: ; i was ment to reset the stack here but that broke stuff no now im not
 
-    mov bp, 0x7fff
-    mov sp, bp
-    
-    
+    xor ax, ax
+    xor bx, bx
+    xor cx, cx
+    xor dx, dx
+    xor di, di
+    xor si, si
 
     mov si, bootmsg
     call PrintstringTOSERIAL
@@ -14,7 +16,8 @@ _KernelEntry:
     call DisableBiosCursor
     call ClearScreen
 
-    jmp CommandLine
+    call PrintHelloworld
+    jmp TESTLOADFILE
 
     hlt
     jmp $
@@ -26,11 +29,15 @@ _KernelEntry:
     
 PrintHelloworld:
     mov si, bootmsgVGA
+    mov di, 0
     call PrintStringToScreen
-    hlt
+    ret
 
 
-        
+printCharTOSerial:
+    mov dx, 0x3f8
+    out dx, al
+    ret
 
 PrintstringTOSERIAL:
     mov dx, 0x3f8
@@ -84,19 +91,37 @@ printChar:
 
 
 
-CommandLine:
-    mov si, .bootmsg
-    mov di, 0
-    call PrintStringToScreen
+FindFileByTag:; tag in al output di(place in memory)
+    mov di, 0x1c00
+    .findfiles:
+        inc di
+        cmp [di], byte 0xBB
+        jne .findfiles
+        inc di
+    .lookloop:
+        cmp [di], byte al
+        je .found
+        .findnextfile:
+            inc di
+            cmp [di], byte 0xAF
+            jne .findnextfile
+            inc di
+            cmp [di], byte 0xFA
+            jne .findnextfile
+            inc di
+        jmp .lookloop
+    .found:
+        ret
 
-    mov di, 160
-    mov al, '$'
-    call printChar
-    inc di
-    call EnablePS2
-    call GrabInput
 
 
+TESTLOADFILE:
+    mov al, 0x10
+    call FindFileByTag ; stores addr into di
+
+    jmp di
+
+
+    jmp $
     hlt
-    .bootmsg db '  Welcome to the comandline in jenny os!', 0
-    %include "../drivers/ps2Driver.asm"
+    

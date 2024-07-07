@@ -7,21 +7,16 @@ EnablePS2:
 
 GrabInput:
     in al, 0x64
-    test al, 0x01
+    test al, 1
     jz GrabInput
-    
+
+
     in al, 0x60
-
-
-
     call convert_ascii
-    mov di, 0
-    call printChar
     cmp al, 0x00
     je .no_input
     cmp al, 0x0D
     je .NotLetter
-    
     
 
     ret
