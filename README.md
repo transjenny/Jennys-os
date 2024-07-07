@@ -1,1 +1,1 @@
-OS is not funcsional yet
+The Os works just theres nothing todo in it atm
