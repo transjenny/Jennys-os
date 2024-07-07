@@ -41,6 +41,10 @@ _commandLineEntry:
         call compair_strings
         cmp al, 1
         je .helpcommand
+        mov di, runcommandstr
+        call compair_strings
+        cmp al, 1
+        je .runcommand
         
         jmp $
     .helpcommand:
@@ -55,7 +59,18 @@ _commandLineEntry:
         call .ClearDisplay
 
         jmp $
-
+    .runcommand:
+        mov al, 0x11
+        call FindFileByTag
+        add di, 3 ; unknown why its 3 bytes off but i can offset it here
+        mov [0x09fe], byte 2
+        mov [0x09ff], byte 1
+        mov [0x09fd], byte 'H'
+        call di
+        call GrabInput
+        mov di, 0
+        call .ClearDisplay
+        jmp $
 
     jmp $
     hlt
@@ -65,6 +80,7 @@ _commandLineEntry:
     cmdbootmsg db 'Welcome to Jennys Commandline!', 0
     helpcommandstr db 'help', 0
     helpcommandprintstr db 'This is a list of all commands in Jennys os(WIP), help | press anykey to start  next command', 0
+    runcommandstr db 'run', 0
     %include "../drivers/ps2Driver.asm"
     jmp $
 compair_strings:

@@ -1,6 +1,6 @@
 import os
-filesToLoad = ["Commandline.asm", "../drivers/VgaAPPDriver.asm"]
-filetoLoadTAG = [0x10, 0x11]
+filesToLoad = ["Commandline.asm","../drivers/VgaAPPDriver.asm"]
+filetoLoadTAG = [0x10,0x11]
 LastFileLoadedLastBit = 0
 if True:
     f = open("system.bin", 'wb')
