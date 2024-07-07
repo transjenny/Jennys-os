@@ -1,11 +1,11 @@
 import os
+filesToLoad = ["Commandline.asm", "../drivers/VgaAPPDriver.asm"]
+filetoLoadTAG = [0x10, 0x11]
+LastFileLoadedLastBit = 0
 if True:
     f = open("system.bin", 'wb')
     f1 = open("Kernel.bin", 'rb')
-    cmdasm = open("Commandline.asm", 'r+')
-    cmdasmstr = cmdasm.read()
-    cmdasm.close()
-    cmdasm = open("Commandline.asm", 'w')
+    
 
 
     kernelheader = bytes([0xbd,0x33, 0xdd, 0x7f, 0xbb, 0x7f]) # show end of index and define 
@@ -17,18 +17,29 @@ if True:
 
     
 
-    TestHeader = bytes([0x10])
 
-    filesystem = kernelheader  + kernel + EndoffileHEADER + TestHeader 
+    
 
-    cmd_org = 0x1c00 + filesystem.find(bytes([0xAF, 0xFA, 0x10]))
-    cmdasm.write(cmdasmstr.replace("[ORGHERE]", str(hex(cmd_org+3))))
-    cmdasm.close()
+    filesystem = kernelheader  + kernel + EndoffileHEADER  
+    LastFileLoadedLastBit = filesystem[len(filesystem)-3]
+    for i in range(len(filesToLoad)):
+        TestHeader = bytes([filetoLoadTAG[i]])
+        cmdasm = open(filesToLoad[i], 'r+')
+        cmdasmstr = cmdasm.read()
+        cmdasm.close()
+        cmdasm = open(filesToLoad[i], 'w')
+        cmd_org = 0x1c01 + len(filesystem)
+        print(filesToLoad[i] + " has org " + str(hex(cmd_org)))
+        cmdasm.write(cmdasmstr.replace("[ORGHERE]", str(hex(cmd_org))))
+        cmdasm.close()
+        os.system('nasm ' + filesToLoad[i] + ' -f bin -o ' + filesToLoad[i].replace('asm', 'bin'))
+        cmdasm = open(filesToLoad[i], 'w').write(cmdasmstr)
+        Commandline = open(filesToLoad[i].replace('asm','bin'), 'rb').read()
+        filesystem += TestHeader +  Commandline + EndoffileHEADER # addemble the file
+        LastFileLoadedLastBit = filesystem[len(filesystem)-3]
 
-    os.system('nasm Commandline.asm -f bin -o cmd.bin')
-    cmdasm = open('Commandline.asm', 'w').write(cmdasmstr)
-    Commandline = open('cmd.bin', 'rb').read()
-    filesystem += Commandline + EndoffileHEADER
+    
+    
 
 
 

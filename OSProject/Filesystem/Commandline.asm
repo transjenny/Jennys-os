@@ -3,7 +3,9 @@
 
 
 _commandLineEntry:
+    
 
+    mov di,0
 
     .ClearDisplay: ; enables the vga card from the new address
         mov dx, 0xb800
@@ -39,6 +41,7 @@ _commandLineEntry:
         call compair_strings
         cmp al, 1
         je .helpcommand
+        
         jmp $
     .helpcommand:
         mov di, 320
@@ -72,7 +75,7 @@ compair_strings:
         jne .notequ
         inc si
         inc di
-        cmp [si], byte 0
+        cmp [di], byte 0
         je .equto
         jmp .Lookloop
     .notequ:
