@@ -29,17 +29,4 @@ _VGAENTRY:
         mov es, dx
         mov [es:di], byte al
         ret
-    .Func_PSS:
-        mov si, 0x01ff
-        mov di, [0x09fe]
-        sub di, 256 ; IDFK WHY THIS IS OFFSET BUT NOTHING ELSE IS
-
-        .printloop:
-            mov al, [si]
-            mov dx, 0xb800
-            mov es, dx
-            mov [es:di], byte al
-            inc si
-            cmp [si], byte 0
-            jne .printloop
-            ret
+    

@@ -27,6 +27,8 @@ GrabInput:
 
 
 convert_ascii:
+        cmp al, 0x0B
+        je .zero_pressed
         cmp al, 0x02
         je .one_pressed
         cmp al, 0x03
@@ -123,9 +125,13 @@ convert_ascii:
         je .n_pressed
         cmp al, 0x32
         je .m_pressed
+        
 
         mov al, 0x00
         ret
+        .zero_pressed:
+            mov al, '0'
+            ret
         .one_pressed:
             mov al, '1'
             ret

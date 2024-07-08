@@ -46,7 +46,7 @@ _commandLineEntry:
         cmp al, 1
         je .runcommand
         
-        jmp $
+        jmp .unknownCommand
     .helpcommand:
         mov di, 320
         
@@ -56,23 +56,37 @@ _commandLineEntry:
 
         call GrabInput
         mov di, 0
-        call .ClearDisplay
+        jmp .ClearDisplay
 
         jmp $
     .runcommand:
-        mov al, 0x11
+        inc si
+        call ConvertStringToNumber
         call FindFileByTag
         add di, 3 ; unknown why its 3 bytes off but i can offset it here
-        mov [0x09fe], byte 2
-        mov [0x09ff], byte 1
-        mov [0x01ff], byte 'H'
-        mov [0x0200], byte 'I'
-        mov [0x0201], byte 0
+
+        push bp
+        mov bp, sp ; give the app its own stack
+        sub bp, 16
+
         call di
+
+        mov sp, bp ; ret to kernel stack
+        pop bp
+
+
+        call GrabInput ; wait for input to skip to next command input
+        mov di, 0
+        jmp .ClearDisplay
+    .unknownCommand:
+        mov si, unknownCommandstr
+        mov di, 320
+        call PrintStringToScreen
+
         call GrabInput
         mov di, 0
-        call .ClearDisplay
-        jmp $
+        jmp .ClearDisplay
+
 
     jmp $
     hlt
@@ -82,6 +96,7 @@ _commandLineEntry:
     cmdbootmsg db 'Welcome to Jennys Commandline!', 0
     helpcommandstr db 'help', 0
     helpcommandprintstr db 'This is a list of all commands in Jennys os(WIP), help | press anykey to start  next command', 0
+    unknownCommandstr db 'You typed an unknown command maybe a typo? | press anykey to start next command', 0
     runcommandstr db 'run', 0
     %include "../drivers/ps2Driver.asm"
     jmp $
@@ -141,3 +156,29 @@ FindFileByTag:; tag in al output di(place in memory)
         jmp .lookloop
     .found:
         ret
+
+ConvertStringToNumber:  ; si has the string number in it
+
+    mov bl, [si]
+    sub bl, 0x30
+    
+    mov ax, 10
+    mul bl
+
+    inc si
+    mov bl, [si]
+    sub bl, 0x30
+
+    add al, bl
+
+    ret
+
+
+
+
+
+
+
+
+
+
