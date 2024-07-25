@@ -50,6 +50,7 @@ VGADriverEntry:
         ret
     .IsNotVgaShown:
         inc eax
+        jmp .endofloop
         ret
 
 

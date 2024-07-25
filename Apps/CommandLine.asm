@@ -6,11 +6,15 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     cmp eax, 0
     je .OnStart ; runs cmd setup
 
+    mov al, [LastKeyPressedNotOnlyAscii]
+    cmp al, 0x0E ; backspace
+    je .undoletter
+
     mov al, [LastKeyPressed]
 
     
     cmp al, 0x00 ; check if unknown key pressed
-    je .nothingTodo
+    je .unknownLetter
     
 
 
@@ -26,7 +30,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     mov eax, [.VideoMemoryPoint]
     mov [VgaCommandBuffer+3], dword eax
 
-    add [.VideoMemoryPoint], dword 1
+    add [.VideoMemoryPoint], dword 2
 
     call WriteToVgaBuffer
 
@@ -41,65 +45,81 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     ret
 
     
+    .undoletter:
+        sub [.VideoMemoryPoint], dword 2
+        sub [.CommandLineBufferSpot], dword 1
+        mov [VgaCommandBuffer], byte dh
+        mov [VgaCommandBuffer+1], byte 3
+        mov [VgaCommandBuffer+2], byte ' '
+        mov eax, [.VideoMemoryPoint]
+        mov [VgaCommandBuffer+3], dword eax
+        call WriteToVgaBuffer
+        jmp .nothingTodo
+
 
 
     .unknownLetter:
+
+        mov [VgaCommandBuffer], byte dh
+        mov [VgaCommandBuffer+1], byte 3
+        mov [VgaCommandBuffer+2], byte ''
+        mov eax, 800
+        mov [VgaCommandBuffer+3], dword eax
+        call WriteToVgaBuffer
+
         pop edi
         ret
     
     .endOfCommand:
         
-        
+        sub [.VideoMemoryPoint], dword 2
 
         mov [VgaCommandBuffer], byte dh
         mov [VgaCommandBuffer+1], byte 3 ; fix up that vga driver bug
         mov [VgaCommandBuffer+2], byte ' '
         mov eax, [.VideoMemoryPoint]
-        sub eax, 1
+        
         mov [VgaCommandBuffer+3], dword eax
 
         call WriteToVgaBuffer
 
-        add [.VideoMemoryPoint], dword 1
-
-        mov ecx, 1
-        mov ebx, 0
-        .fixloop:
-            mov al, [.CommandLineCommandBuffer+ecx]
-            mov [.FixedCommandBuffer+ebx], al
-            add ecx, 2
-            inc ebx
-            cmp al, 0x0D
-            jne .fixloop
-        mov ecx, 0
-        
-
-        
         mov edi, .RootPath
-        mov esi, .FixedCommandBuffer
+        mov esi, .CommandLineCommandBuffer
         call 0x9018 ; call file system
 
         
+
         cmp edi, 1
         jne .AppFound
+        
+        mov [VgaCommandBuffer], byte dh; process id
+        mov [VgaCommandBuffer+1], byte 2 ; print string
+        mov [VgaCommandBuffer+2], dword 320
+        mov [VgaCommandBuffer+6], dword .unknownMessagemsg
+        mov [VgaCommandBuffer+14], word 0x88BB
+        call WriteToVgaBuffer
 
-        mov al, [.FixedCommandBuffer]
-        mov [0xb8000], byte al
-        mov al, [.FixedCommandBuffer+1]
-        mov [0xb8002], byte al
-        mov al, [.FixedCommandBuffer+2]
-        mov [0xb8004], byte al
-        mov al, [.FixedCommandBuffer+3]
-        mov [0xb8006], byte al
-        mov al, [.FixedCommandBuffer+4]
-        mov [0xb8008], byte al
-        mov al, [.FixedCommandBuffer+5]
-        mov [0xb800A], byte al
+        mov esi, Vgadrivername
+        mov edi, .RootPath
+        call 0x9018 ; call the file system
+
+        call edi ; call the vga driver
+
+        call EndOfCommandApp
+        
+        mov [.CommandLineBufferSpot], dword 0
 
         pop edi
+        xor ecx, ecx
+        .ClearCommandBuffer2:
+            mov [.CommandLineCommandBuffer+ecx], byte 0
+            inc ecx
+            cmp ecx, 400
+            jne .ClearCommandBuffer2
         mov eax, 1
         ret
         .AppFound:
+            mov esi, .CommandLineCommandBuffer ; add for app to use
             call edi
             xor ecx, ecx
             .ClearCommandBuffer:
@@ -114,13 +134,14 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
 
     
     .CommandLineCommandBuffer: times 500 db 0 ; every seccond letter is input data (rest is bg data)
-    .CommandLineBufferSpot dd 1 ; starts as one as a fix to the reset
+    .CommandLineBufferSpot dd 0 ; starts as one as a fix to the reset
 
     .FixedCommandBuffer: times 255 db 0
     .VgaDriverName  db 'VgaDrivers',0
     .Ps2DriverName db 'PS2Driver',0
     .RootPath db '~',0
     .bootmsg db 'Welcome To Jennys CommandLine!!', 0
+    .unknownMessagemsg db 'You have typed an unknown command, maybe a typo? | press . to continue',0
     .VideoMemoryPoint dd 162
     .VgaDriverMemoryPoint dd 0
     .Ps2DriverMemoryPoint dd 0

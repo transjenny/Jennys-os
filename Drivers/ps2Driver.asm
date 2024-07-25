@@ -115,7 +115,7 @@ __Ps2Entry:
         je .Found
 
         mov [LastKeyPressedNotOnlyAscii], al
-        mov al, 0x0F
+        mov al, 0x00
 
         ret
 

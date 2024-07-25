@@ -1,10 +1,13 @@
 [bits 16]
 [org 0x7c00]
 
+
 mov ah, 01h         ; Function 01h of INT 10h (video services)
 mov ch, 20h         ; Upper scan line (start scan line)
 mov cl, 1Fh         ; Lower scan line (end scan line)
 int 10h
+
+
 
 
 mov ah, 0x02

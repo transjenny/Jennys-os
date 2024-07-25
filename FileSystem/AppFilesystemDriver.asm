@@ -13,10 +13,20 @@ LoadFileByName:; esi contains string of file looking for, edi contains path name
         cmp [esi], byte 0
         je .CheckPath
 
-        
+        cmp [esi], byte ' ' ; check if the file just has args
+        je .CheckPathArgs
 
 
         jmp .Lookloop
+
+    .CheckPathArgs: 
+        xor ecx,ecx
+        .addloop2:
+            inc ebx
+            cmp [ebx], byte 0
+            jne .addloop2
+            inc ebx
+        jmp .CheckPath
 
     .CheckPath:
         
