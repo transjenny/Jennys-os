@@ -4,6 +4,6 @@ the only added commands are help and run(now just the normal command, works kind
 
 current apps are 
 1) CommandLine
-2) ...
+2) Shutdown
 
 more apps coming soon
