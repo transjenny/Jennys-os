@@ -30,4 +30,4 @@ HelpCommand:
     .Ps2DriverName db 'PS2Driver',0
     .RootPath db '~',0
 
-    .helpcommandstr db 'This is a command list built into Jennys Os Using the name "help" help(this),   thats it | press . to continue',0 
+    .helpcommandstr db 'This is a command list built into Jennys Os Using the name "help" help(this),   shutdown thats it | press . to continue',0 

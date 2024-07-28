@@ -22,16 +22,7 @@ VGADriverEntry:
         
         mov [NumberCommands], byte 0
 
-        ;mov ecx, 0
-        ;.clearloop:
-        ;    mov eax, 16
-        ;    mul ecx
-        ;    mov [CommandBuffer+eax], dword 0
-        ;    inc ecx
-        ;    cmp ecx, 40
-        ;    jne .clearloop
 
-        ;jmp $
         ret
 
 

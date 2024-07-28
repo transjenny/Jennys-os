@@ -10,6 +10,10 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     cmp al, 0x0E ; backspace
     je .undoletter
 
+    mov eax, [AppletPtr]
+    cmp eax, 0
+    jne .AppletRunning
+
     mov al, [LastKeyPressed]
 
     
@@ -46,23 +50,40 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
 
     
     .undoletter:
-        sub [.VideoMemoryPoint], dword 2
-        sub [.CommandLineBufferSpot], dword 1
+        
+        
         mov [VgaCommandBuffer], byte dh
         mov [VgaCommandBuffer+1], byte 3
         mov [VgaCommandBuffer+2], byte ' '
+        
+        
+
+        cmp [.VideoMemoryPoint], dword 162
+        je .undoletter_start
+
+        .RestOfUndo:
+        sub [.VideoMemoryPoint], dword 2
         mov eax, [.VideoMemoryPoint]
         mov [VgaCommandBuffer+3], dword eax
         call WriteToVgaBuffer
-        jmp .nothingTodo
 
+        cmp [.CommandLineBufferSpot], dword 1
+        jne .nothingTodo
+        sub [.CommandLineBufferSpot], dword 1
+
+
+        jmp .nothingTodo
+        .undoletter_start:
+            
+            add [.VideoMemoryPoint], dword 2
+            jmp .RestOfUndo
 
 
     .unknownLetter:
 
         mov [VgaCommandBuffer], byte dh
         mov [VgaCommandBuffer+1], byte 3
-        mov [VgaCommandBuffer+2], byte ''
+        mov [VgaCommandBuffer+2], byte ' '
         mov eax, 800
         mov [VgaCommandBuffer+3], dword eax
         call WriteToVgaBuffer
@@ -132,9 +153,30 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
             mov eax,1
             ret
 
+    .AppletRunning:
+        mov edi, [AppletPtr]
+        
+        call edi
+        
+        cmp eax, 1
+        je .AppletExit
+        pop edi
+        ret
+
+    .AppletExit:
+        
+        mov [AppletPtr], dword 0
+
+        call EndOfCommandApp
+
+        pop edi
+        ret
+
     
     .CommandLineCommandBuffer: times 500 db 0 ; every seccond letter is input data (rest is bg data)
     .CommandLineBufferSpot dd 0 ; starts as one as a fix to the reset
+
+    
 
     .FixedCommandBuffer: times 255 db 0
     .VgaDriverName  db 'VgaDrivers',0
@@ -163,9 +205,9 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
 
         call WriteToVgaBuffer
 
-        mov [VgaCommandBuffer], byte dh
-        mov [VgaCommandBuffer+1], byte 3
-        mov [VgaCommandBuffer+2], byte '$'
+        mov [VgaCommandBuffer], byte dh ; process id
+        mov [VgaCommandBuffer+1], byte 3 ; print char command
+        mov [VgaCommandBuffer+2], byte '$' ; char
         mov [VgaCommandBuffer+3], dword 160
         call WriteToVgaBuffer
 
@@ -208,5 +250,6 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         ret
     IsCommandRunning db 0
     VgaCommandBuffer: times 4 dd 0
+    AppletPtr dd 0
     
     

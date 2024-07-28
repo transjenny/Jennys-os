@@ -2,7 +2,7 @@
 [bits 32]
 
 ;file system goes 
-;Nulltermanaedstring(name) | add 0x0d before the null if a runnable command
+;Null termanaed string(name) | add 0x0d before the null if a runnable command
 ;NullTermanaedstring(type)
 ;NullTermanaedstring(path)
 
@@ -97,6 +97,8 @@ db '~',0
 db 0xAA
 db 0xEE
 db 0xFF
+
+%include "Drivers/MallocApps.asm"
 
 
 times 25600-($-$$) db 0
