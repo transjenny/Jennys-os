@@ -1,4 +1,5 @@
-
+; WARNING THIS WAS PORTED TO WORK WITH THE NEW FILE FORMAT
+; THERE MAY BE WEIRD ISSUES
 
 __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi) eax  0 on first run and 1 on every other run 
     push edi
