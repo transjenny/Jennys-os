@@ -170,6 +170,10 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
             je .AppletExit
             popa
 
+            mov esi, [.offset]
+
+            mov [AppletPtr-__CommandLineEntry+esi], dword edi
+
             mov edi, [.offset]
             xor ecx, ecx
             .ClearCommandBuffer:
@@ -183,14 +187,14 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
             ret
 
     .AppletRunning:
-        mov [0xb8000], byte 'L'
-        mov edi, [AppletPtr]
         
-        call edi
+        mov esi, [AppletPtr-__CommandLineEntry+edi]
+        
+        call esi
         
         cmp eax, 1
         je .AppletExit
-        pop edi
+        
         ret
 
     .AppletExit:
