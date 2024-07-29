@@ -1,8 +1,8 @@
 
 
 LoadFileByName:; esi contains string of file looking for, edi contains path name , rets edi(memory addr of file)
+    pusha 
     mov ebx, 0x9000
-    mov ecx, 0xb8000
     .Lookloop:
         mov al, [ebx]
         cmp [esi], byte al
@@ -54,7 +54,7 @@ LoadFileByName:; esi contains string of file looking for, edi contains path name
     .notEQU:
         .findNextFile:
             inc ebx
-            cmp ebx, 0xF400
+            cmp ebx, 0xFFFF
             jg .ErrorNotFound
 
             cmp [ebx], byte 0xAA
@@ -67,10 +67,17 @@ LoadFileByName:; esi contains string of file looking for, edi contains path name
             jmp .Lookloop
     .Found:
         inc ebx
-        mov edi, ebx
+        push ebx
+
+        popa
+
+        pop ebx
+
         
         ret
     .ErrorNotFound:
+        
+        popa 
         mov edi, 1
         ret
 

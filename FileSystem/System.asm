@@ -1,5 +1,5 @@
-[org 0x9000]
 [bits 32]
+[org 0x9000]
 
 ;file system goes 
 ;Null termanaed string(name) | add 0x0d before the null if a runnable command
@@ -98,7 +98,7 @@ db 0xAA
 db 0xEE
 db 0xFF
 
-%include "Drivers/MallocApps.asm"
+;%include "Drivers/MallocApps.asm"
 
 
 times 25600-($-$$) db 0

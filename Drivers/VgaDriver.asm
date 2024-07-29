@@ -50,11 +50,11 @@ VGADriverEntry:
         mov ecx, 0xb8000
         .CSLoop:
             mov [ecx], byte ' '
-            inc ecx
-            inc ecx
+            add ecx, 2
             cmp ecx, 0xB8FA0
-            jne .CSLoop
+            jl .CSLoop
             popa
+            
             jmp .endofloop
     .PrintStringShown:
         pusha

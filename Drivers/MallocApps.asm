@@ -3,6 +3,7 @@ db 'APPS',0
 db '~',0
 
 Malloc:; inputs eax(bytes to alloc) outputs eax(memory addr) ebx(index(used for free command))
+    pusha
     push eax
     mov ebx, [.SpaceAfterKernel]
     mov eax, MemoryPointsAllacted
@@ -50,14 +51,19 @@ Malloc:; inputs eax(bytes to alloc) outputs eax(memory addr) ebx(index(used for 
 
 
     mov eax, ebx 
+    push eax
 
     sub ebx, [.SpaceAfterKernel]
+    push ebx ; stack magic
 
+    popa
 
+    pop eax
+    pop ebx
 
     ret ; output eax(mem addr) ebx(index num) >> input into free command to free from malloc for other apps to use
 
-    .SpaceAfterKernel dd 0x16600 ; caluated by 0x7e00(kernel space) + 100(kenrel size + system size) * 512(converting from sectors to bytes)
+    .SpaceAfterKernel dd 0x14600 ; caluated by 0x7e00(kernel space) + 100(kenrel size + system size) * 512(converting from sectors to bytes)
 
     
 
@@ -124,32 +130,90 @@ db 0xAA
 db 0xEE
 db 0xFF
 
-db 'OpenApp',0 ; UNFINNISHED
+db 'OpenApp',0 
 db 'Apps',0
 db '~',0
 
-OpenApp: ; this func opens apps the right way (mallocs the room needed for the app ) inputs eax (filename) ebx(path) outputs eax (memory addr)
-    mov esi, eax
-    mov edi, ebx
-    call 0x9018 ; file system memory addr
+OpenApp: ; inputs file(eax)
+    push eax
 
-    xor eax, eax
+    xor ecx, ecx
+    .incloop:
+        inc ecx
+        cmp [eax+ecx], byte 0xAA
+        jne .incloop
+        cmp [eax+ecx+1], byte 0xEE
+        jne .incloop
+        cmp [eax+ecx+2], byte 0xFF
+        jne .incloop
 
-    .getsize: ; theres a VERY VERY small chance that this might miss (untested the possisble bug)
-        inc eax
-
-        cmp [edi+eax], byte 0xAA ; end of file bytes are 0xAAEEFF
-        jne .getsize
-        inc eax
-        cmp [edi+eax], byte 0xEE
-        jne .getsize
-        inc eax
-        cmp [edi+eax], byte 0xFF
-        jne .getsize
-        inc eax
+    mov eax, ecx
+    call Malloc
     
+    pop ebx
+    push eax
+
+    .copyloop:
+        mov dl, [ebx]
+        mov [eax], dl
+        inc ebx
+        inc eax
+        cmp [ebx], byte 0xAA
+        jne .copyloop
+        cmp [ebx+1], byte 0xEE
+        jne .copyloop
+        cmp [ebx+2], byte 0xFF
+        jne .copyloop
+        
+    
+    pop eax
+    call eax
+    jmp $
+
+    .file dd 0
+
+
+db 0xAA
+db 0xEE
+db 0xFF
+
+
+db 'TestOpenApp',0
+db 'App',0
+db '~',0
+SomeTestAPP:
+    
+    mov bl, [var-SomeTestAPP+eax]
+    mov [0xb8000], bl
+    ret
+    
+    var db 'B'
+
+
+    .offset dd 0
+
+db 0xAA
+db 0xEE
+db 0xFF
+
+db 'tf', 0x0D,0
+db 'app',0
+db '~',0
+
+OpenAppTest:
     
 
+    mov eax, SomeTestAPP
+    call OpenApp
+    jmp $
+    .filename db 'TestOpenApp',0
+    .root db '~',0
+
+    .FailRead:
+        mov [0xb8000], byte 'E'
+        jmp $
+        hlt
+    
 
 db 0xAA
 db 0xEE

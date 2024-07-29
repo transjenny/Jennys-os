@@ -251,5 +251,3 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     IsCommandRunning db 0
     VgaCommandBuffer: times 4 dd 0
     AppletPtr dd 0
-    
-    
