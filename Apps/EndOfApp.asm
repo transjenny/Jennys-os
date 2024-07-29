@@ -15,9 +15,6 @@ EndOfCommandApp: ; will never enter the Cpu shdulder so not setup to
 
     call WriteToVgaBuffer
 
-    call __CommandLineEntry.OnStart ; reset the commandline
-    mov [__CommandLineEntry.VideoMemoryPoint], dword 162
-    mov [__CommandLineEntry.CommandLineBufferSpot], dword 0
     ret
     .Ps2DriverName db 'PS2Driver',0
     .RootPath db '~',0

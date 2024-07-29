@@ -61,12 +61,20 @@ _KernelEntry:
     mov esi, bootmsg
     call PrintString
 
-
     mov esi, StartAPP
     mov edi, RootPath
     call LoadFileByName
+    push edi
 
-    mov [CPUTaskBuffer], dword edi
+    mov esi, AppOpener
+    mov edi, RootPath
+    call LoadFileByName
+    pop eax
+
+    call edi
+
+    
+    mov [CPUTaskBuffer], dword eax
 
     mov esi, TaskSwitcherName
     mov edi, RootPath
@@ -100,6 +108,8 @@ AppTest3 db 'This is 100% a 3rd app thats 100% doing smth!',0
 bootmsg db 'This is a hello world from a 32 bit os!!', 0
 
 StartAPP db 'CommandLine',0
+
+AppOpener db 'OpenApp',0
 
 TaskSwitcherName db 'TaskSwitcher',0
 

@@ -55,9 +55,7 @@ Malloc:; inputs eax(bytes to alloc) outputs eax(memory addr) ebx(index(used for 
 
     sub ebx, [.SpaceAfterKernel]
     push ebx ; stack magic
-
     popa
-
     pop eax
     pop ebx
 
@@ -134,9 +132,9 @@ db 'OpenApp',0
 db 'Apps',0
 db '~',0
 
-OpenApp: ; inputs file(eax)
+OpenApp: ; inputs file(eax) outputs eax(memory addr)
     push eax
-
+    
     xor ecx, ecx
     .incloop:
         inc ecx
@@ -151,25 +149,23 @@ OpenApp: ; inputs file(eax)
     call Malloc
     
     pop ebx
-    push eax
 
+    xor ecx, ecx
     .copyloop:
-        mov dl, [ebx]
-        mov [eax], dl
-        inc ebx
-        inc eax
-        cmp [ebx], byte 0xAA
+        mov dl, [ebx+ecx]
+        mov [eax+ecx], dl
+        inc ecx
+        cmp [ebx+ecx], byte 0xAA
         jne .copyloop
-        cmp [ebx+1], byte 0xEE
+        cmp [ebx+ecx+1], byte 0xEE
         jne .copyloop
-        cmp [ebx+2], byte 0xFF
+        cmp [ebx+ecx+2], byte 0xFF
         jne .copyloop
-        
-    
-    pop eax
-    call eax
-    jmp $
 
+    
+
+    
+    ret
     .file dd 0
 
 
@@ -182,15 +178,11 @@ db 'TestOpenApp',0
 db 'App',0
 db '~',0
 SomeTestAPP:
-    
     mov bl, [var-SomeTestAPP+eax]
     mov [0xb8000], bl
     ret
     
     var db 'B'
-
-
-    .offset dd 0
 
 db 0xAA
 db 0xEE

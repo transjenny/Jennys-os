@@ -137,5 +137,6 @@ __Ps2Entry:
 
 IncludeOnlyAscii db 1
 Wait_input db 0
+FoucusWindow db 0
 LastKeyPressed db 0, 0, 0, 0 ; formated like this as its an array
 LastKeyPressedNotOnlyAscii db 0,0,0,0

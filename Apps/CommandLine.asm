@@ -1,18 +1,27 @@
 
 
 __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi) eax  0 on first run and 1 on every other run 
-    
     push edi
+
     cmp eax, 0
     je .OnStart ; runs cmd setup
+
+    mov eax, [AppletPtr-__CommandLineEntry+edi]
+    cmp eax, 0
+    jne .AppletRunning
+
+    cmp [FoucusWindow], dh ; skips the while process if not in foucs
+    jne .unknownLetter
+    
+    
+
+    
 
     mov al, [LastKeyPressedNotOnlyAscii]
     cmp al, 0x0E ; backspace
     je .undoletter
 
-    mov eax, [AppletPtr]
-    cmp eax, 0
-    jne .AppletRunning
+    
 
     mov al, [LastKeyPressed]
 
@@ -23,18 +32,18 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
 
 
     push eax
-    mov ecx, [.CommandLineBufferSpot]
-    mov [.CommandLineCommandBuffer+ecx], byte al
+    mov ecx, [.CommandLineBufferSpot-__CommandLineEntry+edi]
+    mov [.CommandLineCommandBuffer-__CommandLineEntry+edi+ecx], byte al
 
-    add [.CommandLineBufferSpot], dword 1
+    add [.CommandLineBufferSpot-__CommandLineEntry+edi], dword 1
 
     mov [VgaCommandBuffer], byte dh
     mov [VgaCommandBuffer+1], byte 3
     mov [VgaCommandBuffer+2], byte al
-    mov eax, [.VideoMemoryPoint]
+    mov eax, [.VideoMemoryPoint-__CommandLineEntry+edi]
     mov [VgaCommandBuffer+3], dword eax
 
-    add [.VideoMemoryPoint], dword 2
+    add [.VideoMemoryPoint-__CommandLineEntry+edi], dword 2
 
     call WriteToVgaBuffer
 
@@ -58,24 +67,24 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         
         
 
-        cmp [.VideoMemoryPoint], dword 162
+        cmp [.VideoMemoryPoint-__CommandLineEntry+edi], dword 162
         je .undoletter_start
 
         .RestOfUndo:
-        sub [.VideoMemoryPoint], dword 2
-        mov eax, [.VideoMemoryPoint]
+        sub [.VideoMemoryPoint-__CommandLineEntry+edi], dword 2
+        mov eax, [.VideoMemoryPoint-__CommandLineEntry+edi]
         mov [VgaCommandBuffer+3], dword eax
         call WriteToVgaBuffer
 
-        cmp [.CommandLineBufferSpot], dword 1
+        cmp [.CommandLineBufferSpot-__CommandLineEntry+edi], dword 1
         jne .nothingTodo
-        sub [.CommandLineBufferSpot], dword 1
+        sub [.CommandLineBufferSpot-__CommandLineEntry+edi], dword 1
 
 
         jmp .nothingTodo
         .undoletter_start:
             
-            add [.VideoMemoryPoint], dword 2
+            add [.VideoMemoryPoint-__CommandLineEntry+edi], dword 2
             jmp .RestOfUndo
 
 
@@ -92,13 +101,13 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         ret
     
     .endOfCommand:
-        
-        sub [.VideoMemoryPoint], dword 2
+        mov [.offset], edi
+        sub [.VideoMemoryPoint-__CommandLineEntry+edi], dword 2
 
         mov [VgaCommandBuffer], byte dh
         mov [VgaCommandBuffer+1], byte 3 ; fix up that vga driver bug
         mov [VgaCommandBuffer+2], byte ' '
-        mov eax, [.VideoMemoryPoint]
+        mov eax, [.VideoMemoryPoint-__CommandLineEntry+edi]
         
         mov [VgaCommandBuffer+3], dword eax
 
@@ -106,34 +115,44 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
 
         mov edi, .RootPath
         mov esi, .CommandLineCommandBuffer
-        call 0x9018 ; call file system
-
-        
+        sub esi, __CommandLineEntry
+        add esi, [.offset]
+        call  0x08:0x9018 ; call file system
 
         cmp edi, 1
         jne .AppFound
+        mov ecx, edx
         
+        pusha
         mov [VgaCommandBuffer], byte dh; process id
         mov [VgaCommandBuffer+1], byte 2 ; print string
         mov [VgaCommandBuffer+2], dword 320
         mov [VgaCommandBuffer+6], dword .unknownMessagemsg
         mov [VgaCommandBuffer+14], word 0x88BB
         call WriteToVgaBuffer
-
+        popa
+        
         mov esi, Vgadrivername
         mov edi, .RootPath
-        call 0x9018 ; call the file system
+        call 0x08:0x9018 ; call the file system
 
         call edi ; call the vga driver
 
-        call EndOfCommandApp
-        
-        mov [.CommandLineBufferSpot], dword 0
+        mov esi, EndOfCommandAppName
+        mov edi, .RootPath
+        call 0x08:0x9018
+        call edi
 
-        pop edi
+        
+        
+        mov edi, [.offset]
+        call .OnStart
+        mov [.VideoMemoryPoint-__CommandLineEntry+edi], dword 162
+
+        mov [.CommandLineBufferSpot-__CommandLineEntry+edi], dword 0
         xor ecx, ecx
         .ClearCommandBuffer2:
-            mov [.CommandLineCommandBuffer+ecx], byte 0
+            mov [.CommandLineCommandBuffer-__CommandLineEntry+edi+ecx], byte 0
             inc ecx
             cmp ecx, 400
             jne .ClearCommandBuffer2
@@ -141,10 +160,20 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         ret
         .AppFound:
             mov esi, .CommandLineCommandBuffer ; add for app to use
+            sub esi, __CommandLineEntry
+            add esi, edx
+            mov ecx, edx
+
+            pusha
             call edi
+            cmp eax, 1
+            je .AppletExit
+            popa
+
+            mov edi, [.offset]
             xor ecx, ecx
             .ClearCommandBuffer:
-                mov [.CommandLineCommandBuffer+ecx], byte 0
+                mov [.CommandLineCommandBuffer-__CommandLineEntry+edi+ecx], byte 0
                 inc ecx
                 cmp ecx, 400
                 jne .ClearCommandBuffer
@@ -154,6 +183,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
             ret
 
     .AppletRunning:
+        mov [0xb8000], byte 'L'
         mov edi, [AppletPtr]
         
         call edi
@@ -164,12 +194,24 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         ret
 
     .AppletExit:
+        popa
+        mov edi, [.offset]
+        mov [AppletPtr-__CommandLineEntry+edi], dword 0
+
+
+        xor ecx, ecx
+        .ClearCommandBufferExit:
+            mov [.CommandLineCommandBuffer-__CommandLineEntry+edi+ecx], byte 0
+            inc ecx
+            cmp ecx, 400
+            jne .ClearCommandBufferExit
+
         
-        mov [AppletPtr], dword 0
 
-        call EndOfCommandApp
-
-        pop edi
+        call .OnStart
+        mov [.VideoMemoryPoint-__CommandLineEntry+edi], dword 162
+        mov [.CommandLineBufferSpot-__CommandLineEntry+edi], dword 0
+        mov edi, [.offset]
         ret
 
     
@@ -187,9 +229,11 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     .VideoMemoryPoint dd 162
     .VgaDriverMemoryPoint dd 0
     .Ps2DriverMemoryPoint dd 0
+    .offset dd 0
     
 
     .OnStart:
+
         mov [VgaCommandBuffer], byte dh ; process id
         mov [VgaCommandBuffer+1], byte 1; clear screen
         mov [VgaCommandBuffer+14], word 0x88BB
@@ -217,7 +261,6 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         mov [VgaCommandBuffer+3], dword 161
         call WriteToVgaBuffer
         
-        mov [.VideoMemoryPoint], dword 162
         ret
     WriteToVgaBuffer:
 

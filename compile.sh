@@ -2,7 +2,7 @@ rm -rf *.bin
 rm -rf build/os.bin
 rm -rf *.o
 
-cp FileSystem/filesystemDriver.asm FileSystem/AppFilesystemDriver.asm
+#cp FileSystem/filesystemDriver.asm FileSystem/AppFilesystemDriver.asm
 
 nasm -f bin -o boot.bin boot/boot.asm
 nasm -f bin -o Kernel.bin Kernel.asm

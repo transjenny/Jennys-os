@@ -25,6 +25,9 @@ db 0xEE
 db 0xFF
 
 
+
+
+
 Vgadrivername db 'VgaDrivers',0
 db 'FileType',0
 rootpath db '~', 0 ; ~ means root in the file system
@@ -98,7 +101,8 @@ db 0xAA
 db 0xEE
 db 0xFF
 
-;%include "Drivers/MallocApps.asm"
+
+%include "Drivers/MallocApps.asm"
 
 
 times 25600-($-$$) db 0

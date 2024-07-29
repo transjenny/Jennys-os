@@ -25,7 +25,9 @@ HelpCommand:
 
     mov [__CommandLineEntry.VideoMemoryPoint], dword 162
     
+    
     popa
+    mov eax, 1 ; ret var
     ret
     .Ps2DriverName db 'PS2Driver',0
     .RootPath db '~',0
