@@ -94,7 +94,7 @@ _KernelEntry:
     call LoadFileByName
 
     mov [CPUTaskBuffer+48], dword edi
-    mov [CpuTaskNumber], byte 4
+    mov [CpuTaskNumber], byte 48
     jmp CPUschedulerStart
     
     

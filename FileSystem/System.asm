@@ -60,7 +60,7 @@ db 0xAA
 db 0xEE
 db 0xFF
 
-db 'CommandLine',0
+commmandlinename db 'CommandLine',0
 db 'APP',0
 db '~',0
 CMD: 
@@ -103,6 +103,33 @@ db 0xFF
 
 
 %include "Drivers/MallocApps.asm"
+
+db 'createtab', 0x0D,0
+db 'App',0
+db '~',0
+
+CreateTab:
+    mov [0xb8000], byte 'L'
+    
+
+
+    mov eax, __CommandLineEntry
+    call 08h:OpenApp
+    xor ecx, ecx
+    
+    add [0x7e05], byte 16
+    mov cl, [0x7e05]
+    mov [0x7e06+ecx], dword eax
+
+    call 08h:EndOfCommandApp
+
+    mov eax, 1
+    ret
+    
+
+db 0xAA
+db 0xEE
+db 0xFF
 
 
 times 25600-($-$$) db 0

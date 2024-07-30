@@ -7,12 +7,12 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     cmp eax, 0
     je .OnStart ; runs cmd setup
 
-    mov eax, [AppletPtr-__CommandLineEntry+edi]
+    mov eax, [AppletPtr-__CommandLineEntry+edi] ; Every var that changes from instance to instance( local vars) has this
     cmp eax, 0
     jne .AppletRunning
 
     cmp [FoucusWindow], dh ; skips the while process if not in foucs
-    jne .unknownLetter
+    jne .NotInFoucs
     
     
 
@@ -96,7 +96,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         mov [VgaCommandBuffer+2], byte ' '
         mov eax, 800
         mov [VgaCommandBuffer+3], dword eax
-        call WriteToVgaBuffer
+        call WriteToVgaBuffer ; writes to the vga driver to prevent weird errors 
 
         pop edi
         ret
@@ -236,6 +236,9 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     .Ps2DriverMemoryPoint dd 0
     .offset dd 0
     
+    .NotInFoucs:
+
+        jmp .unknownLetter
 
     .OnStart:
 
