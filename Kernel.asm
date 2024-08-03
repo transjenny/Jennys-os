@@ -57,6 +57,10 @@ PrintString: ; string in esi current offset in ebx
 %include "CPUscheduler.asm"
 
 _KernelEntry:
+
+    mov esp, 0x1000
+
+
     mov ebx, 0
     mov esi, bootmsg
     call PrintString

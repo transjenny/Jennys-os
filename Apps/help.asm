@@ -19,13 +19,16 @@ HelpCommand:
 
     mov esi, EndOfCommandAppName
     mov edi, .RootPath
-    call 0x9018 ; file system
-    
+    call 0x9018 ; file system    
+
     call edi ; call the end of command app
 
     mov [__CommandLineEntry.VideoMemoryPoint], dword 162
     
-    
+    mov [VgaCommandBuffer+1], byte 1
+    call WriteToVgaBuffer
+
+
     popa
     mov eax, 1 ; ret var
     ret

@@ -7,6 +7,8 @@ __TaskSwitcherEntry:
         
         mov [FoucusWindow], byte 4
         mov [CurrentAppID], byte 4
+
+
         mov edx, [VgaCommandBuffer]
         xor ebx, ebx
         xor eax, eax

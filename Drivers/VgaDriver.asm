@@ -145,7 +145,7 @@ VGADriverEntry:
 CurrentAppID db 0
 
 
-CommandBuffer: times 40 dd 0 ; each command is 4 dwords
+CommandBuffer: times 400 dd 0 ; each command is 4 dwords
 
 CurrentCommandIndex db 0
 
