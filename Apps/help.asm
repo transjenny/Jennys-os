@@ -20,7 +20,7 @@ HelpCommand:
     mov esi, EndOfCommandAppName
     mov edi, .RootPath
     call 0x9018 ; file system
-
+    
     call edi ; call the end of command app
 
     mov [__CommandLineEntry.VideoMemoryPoint], dword 162

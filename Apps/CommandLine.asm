@@ -3,7 +3,7 @@
 
 __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi) eax  0 on first run and 1 on every other run 
     push edi
-
+    mov [.Processid], byte dh
     cmp eax, 0
     je .OnStart ; runs cmd setup
 
@@ -104,7 +104,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     .endOfCommand:
         mov [.offset], edi
         sub [.VideoMemoryPoint-__CommandLineEntry+edi], dword 2
-
+        mov dh, [.Processid]
         mov [VgaCommandBuffer], byte dh
         mov [VgaCommandBuffer+1], byte 3 ; fix up that vga driver bug
         mov [VgaCommandBuffer+2], byte ' '
@@ -125,6 +125,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         mov ecx, edx
         
         pusha
+        mov dh, [.Processid]
         mov [VgaCommandBuffer], byte dh; process id
         mov [VgaCommandBuffer+1], byte 2 ; print string
         mov [VgaCommandBuffer+2], dword 320
@@ -147,6 +148,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         
         
         mov edi, [.offset]
+        mov dh, [.Processid]
         call .OnStart
         mov [.VideoMemoryPoint-__CommandLineEntry+edi], dword 162
 
@@ -166,6 +168,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
             mov ecx, edx
 
             pusha
+            mov dh, [.Processid]
             call edi
             cmp eax, 1
             je .AppletExit
@@ -235,12 +238,15 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
     .VgaDriverMemoryPoint dd 0
     .Ps2DriverMemoryPoint dd 0
     .offset dd 0
+    .Processid db 0
     
     .NotInFoucs:
 
         jmp .unknownLetter
 
     .OnStart:
+
+
 
         mov [VgaCommandBuffer], byte dh ; process id
         mov [VgaCommandBuffer+1], byte 1; clear screen
@@ -271,7 +277,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         
         ret
     WriteToVgaBuffer:
-
+        
         xor ecx, ecx
         mov cl, [NumberCommands]
         mov eax, 16
@@ -297,7 +303,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         mov [CommandBuffer+ecx], eax
 
         add [NumberCommands], byte 1
-
+        
         ret
     IsCommandRunning db 0
     VgaCommandBuffer: times 4 dd 0

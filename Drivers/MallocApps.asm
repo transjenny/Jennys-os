@@ -90,7 +90,7 @@ Malloc:; inputs eax(bytes to alloc) outputs eax(memory addr) ebx(index(used for 
             mov ebx, 1
             ret
 
-    MemoryPointsAllacted: times 500 dd 0 ; WARNING 255 LIMIT OF NUMBER MALLOCS 
+    MemoryPointsAllacted: times 1000 dd 0 ; WARNING 500 LIMIT OF NUMBER MALLOCS 
     dd 0xAABBCCDD ; end dword to look for
     ; odd dwords are starting memoryaddr
     ; even dwords are ending memoryaddr

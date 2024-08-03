@@ -41,9 +41,64 @@ VGADriverEntry:
         ret
     .IsNotVgaShown:
         inc eax
+        
+        cmp [eax], byte 1
+        je .ClearScreenNotShown
+        
+        cmp [eax], byte 2
+        je .PrintStringNotShown
+        
+        cmp [eax], byte 3
+        je .PrintCharNotShown
+
+        jmp .endofloop
+
         jmp .endofloop
         ret
 
+    .ClearScreenNotShown:
+        
+        cmp [VgaBufferSpot], dword 0 ; skip if no buffer has been set
+        je .endofloop
+
+        mov ecx, [VgaBufferSpot]
+        xor eax, eax
+        .CSNSloop:
+            mov [ecx+eax], byte ' '
+            inc eax
+            
+            cmp eax, 4000
+            je .CSNSloop
+        
+        jmp .endofloop
+    .PrintStringNotShown:
+        
+        mov ecx, [VgaBufferSpot]
+        inc eax
+        mov ebx, [eax]
+        add eax, 4
+        add ecx, ebx
+        mov esi, [eax]
+        .PrintLoopNS:
+            mov dl, [esi]
+            mov [ecx], byte dl
+            inc ecx
+            inc ecx
+            inc esi
+            cmp [esi], byte 0
+            jne .PrintLoopNS
+            
+            jmp .endofloop
+    .PrintCharNotShown:
+        
+        inc eax
+        mov dl, byte [eax]
+        inc eax
+        mov esi, [eax]
+        add esi, [VgaBufferSpot]
+        mov [esi], dl
+        
+        jmp .endofloop
 
     .ClearScreenShown:
         pusha
@@ -83,11 +138,10 @@ VGADriverEntry:
         add esi, 0xb8000
         mov [esi], dl
         popa
-        ;jmp $
         jmp .endofloop
     
-    .VgaBufferSpot: times 5000 db 0; we need to buffer 80 kb here, so we cant do that on disk.
-    
+        VgaBufferSpot dd 0
+
 CurrentAppID db 0
 
 

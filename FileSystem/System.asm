@@ -109,9 +109,10 @@ db 'App',0
 db '~',0
 
 CreateTab:
-    mov [0xb8000], byte 'L'
     
-
+    mov eax, 4000
+    call Malloc
+    mov [VgaBufferSpot], dword eax
 
     mov eax, __CommandLineEntry
     call 08h:OpenApp

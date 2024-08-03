@@ -9,12 +9,6 @@ EndOfCommandApp: ; will never enter the Cpu shdulder so not setup to
         jne .waitloop
     call edi ; make sure to wait for the key relece
 
-    mov [VgaCommandBuffer], byte dh ; process id
-    mov [VgaCommandBuffer+1], byte 1; clear screen
-    mov [VgaCommandBuffer+14], word 0x88BB
-
-    call WriteToVgaBuffer
-
     ret
     .Ps2DriverName db 'PS2Driver',0
     .RootPath db '~',0
