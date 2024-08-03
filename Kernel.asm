@@ -58,8 +58,6 @@ PrintString: ; string in esi current offset in ebx
 
 _KernelEntry:
 
-    mov esp, 0x1000
-
 
     mov ebx, 0
     mov esi, bootmsg

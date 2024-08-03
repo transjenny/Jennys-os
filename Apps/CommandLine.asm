@@ -207,6 +207,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         mov [AppletPtr-__CommandLineEntry+edi], dword 0
 
 
+
         xor ecx, ecx
         .ClearCommandBufferExit:
             mov [.CommandLineCommandBuffer-__CommandLineEntry+edi+ecx], byte 0
@@ -217,6 +218,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         
 
         call .OnStart
+        
         mov [.VideoMemoryPoint-__CommandLineEntry+edi], dword 162
         mov [.CommandLineBufferSpot-__CommandLineEntry+edi], dword 0
         mov edi, [.offset]

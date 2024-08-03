@@ -15,6 +15,13 @@ cat boot.bin Kernel.bin System.bin  >> build/os.bin
 cat boot.bin Kernel.bin System.bin  >> build/os.bin
 cat boot.bin Kernel.bin System.bin  >> build/os.bin
 cat boot.bin Kernel.bin System.bin  >> build/os.bin
+cat boot.bin Kernel.bin System.bin  >> build/os.bin
+cat boot.bin Kernel.bin System.bin  >> build/os.bin
+cat boot.bin Kernel.bin System.bin  >> build/os.bin
+cat boot.bin Kernel.bin System.bin  >> build/os.bin
+cat boot.bin Kernel.bin System.bin  >> build/os.bin
+cat boot.bin Kernel.bin System.bin  >> build/os.bin
+
 
 
 qemu-system-x86_64 build/os.bin -device isa-debug-exit

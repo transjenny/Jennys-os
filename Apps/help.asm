@@ -30,7 +30,8 @@ HelpCommand:
 
 
     popa
-    mov eax, 1 ; ret var
+    mov eax, 1
+    ret
     ret
     .Ps2DriverName db 'PS2Driver',0
     .RootPath db '~',0
