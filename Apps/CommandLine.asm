@@ -148,20 +148,12 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         call 0x08:0x9018
         call edi
 
-        
-        
-        mov edi, [.offset]
-        mov dh, [.Processid]
-        call .OnStart
-        mov [.VideoMemoryPoint-__CommandLineEntry+edi], dword 162
+        mov [VgaCommandBuffer+1], byte 1
+        call WriteToVgaBuffer
 
-        mov [.CommandLineBufferSpot-__CommandLineEntry+edi], dword 0
-        xor ecx, ecx
-        .ClearCommandBuffer2:
-            mov [.CommandLineCommandBuffer-__CommandLineEntry+edi+ecx], byte 0
-            inc ecx
-            cmp ecx, 400
-            jne .ClearCommandBuffer2
+        pusha
+        jmp .AppletExit
+        
         mov eax, 1
         ret
         .AppFound:
@@ -228,10 +220,9 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         ret
         .appletexitontab:
                 
+                
 
-                cmp [FoucusWindow], byte 0
-                je .unknownLetter
-                call 08h:VGADriverEntry
+                call 08h:VGADriverEntry ; run everything waiting in the vga command buffer
 
                 mov ecx, 0xb8000
                 xor eax, eax
