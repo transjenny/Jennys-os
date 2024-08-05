@@ -141,5 +141,12 @@ Reboot:
 
 db 0xAA,0xEE,0xFF
 
+db 'WriteToDiskCheck', 0x0D, 0
+db 'Apps',  0
+db '~',0
+
+
+db 0xAA, 0xEE, 0xFF
+
 
 times 25600-($-$$) db 0

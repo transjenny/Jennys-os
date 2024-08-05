@@ -8,11 +8,11 @@ __Ps2Entry:
         in al, 0x60
         call .ConvertText
         mov [LastKeyPressed], byte al
-        
+        mov [KeyJustPressed], byte 1
         ret
 
     .NoInput:
-        
+        mov [KeyJustPressed], byte 0
         mov [LastKeyPressed], byte 0
         ret
 
@@ -116,7 +116,7 @@ __Ps2Entry:
 
         mov [LastKeyPressedNotOnlyAscii], al
         mov al, 0x00
-
+        
         ret
 
         .IncludeOnlyAscii:
@@ -128,6 +128,7 @@ __Ps2Entry:
 
 
         .Found:
+            
             mov al, [.ConverTableAscii+ecx]
             ret
 
@@ -136,7 +137,8 @@ __Ps2Entry:
 
 
 IncludeOnlyAscii db 1
-Wait_input db 0
+Wait_input db 1
 FoucusWindow db 0
 LastKeyPressed db 0, 0, 0, 0 ; formated like this as its an array
 LastKeyPressedNotOnlyAscii db 0,0,0,0
+KeyJustPressed db 0

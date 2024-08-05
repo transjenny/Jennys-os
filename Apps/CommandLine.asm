@@ -63,7 +63,8 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
 
     
     .undoletter:
-        
+        cmp [KeyJustPressed], byte 1
+        jne .unknownLetter
         
         mov [VgaCommandBuffer], byte dh
         mov [VgaCommandBuffer+1], byte 3
@@ -148,7 +149,7 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         call 0x08:0x9018
         call edi
 
-        mov [VgaCommandBuffer+1], byte 1
+        mov [VgaCommandBuffer+1], byte 1 ; make sure the screen gets cleared
         call WriteToVgaBuffer
 
         pusha
