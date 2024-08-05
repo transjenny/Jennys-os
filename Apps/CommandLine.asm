@@ -4,8 +4,11 @@
 __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi) eax  0 on first run and 1 on every other run 
     push edi
     mov [.Processid], byte dh
+
+    pusha
     cmp eax, 0
-    je .OnStart ; runs cmd setup
+    je .AppletExit ; runs cmd setup
+    popa
 
     mov eax, [AppletPtr-__CommandLineEntry+edi] ; Every var that changes from instance to instance( local vars) has this
     cmp eax, 0
@@ -218,11 +221,36 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         
 
         call .OnStart
-        
+        mov edi, [.offset]
         mov [.VideoMemoryPoint-__CommandLineEntry+edi], dword 162
         mov [.CommandLineBufferSpot-__CommandLineEntry+edi], dword 0
-        mov edi, [.offset]
+        
         ret
+        .appletexitontab:
+                
+
+                cmp [FoucusWindow], byte 0
+                je .unknownLetter
+                call 08h:VGADriverEntry
+
+                mov ecx, 0xb8000
+                xor eax, eax
+                xor edx, edx
+                .ShowStartText:
+                    mov bl, [.startmsg+eax]
+                    cmp bl, 0
+                    je .exit
+                    mov [ecx+edx], bl
+                    inc eax
+                    add edx, 2
+                    jmp .ShowStartText
+        
+        
+                .exit:
+                    mov [0xb8000+160], byte '$'
+        
+                ret
+                .startmsg db 'Welcome to Jennys os! (Tab:1)',0
 
     
     .CommandLineCommandBuffer: times 500 db 0 ; every seccond letter is input data (rest is bg data)
@@ -248,7 +276,8 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
 
     .OnStart:
 
-
+        cmp [.Processid], byte 0
+        jne .appletexitontab
 
         mov [VgaCommandBuffer], byte dh ; process id
         mov [VgaCommandBuffer+1], byte 1; clear screen
@@ -276,10 +305,17 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         mov [VgaCommandBuffer+2], byte 0x0F
         mov [VgaCommandBuffer+3], dword 161
         call WriteToVgaBuffer
+
+        call 08h:VGADriverEntry
         
+        mov [VgaCommandBuffer+1], byte 3
+        mov [VgaCommandBuffer+2], byte ' '
+        mov [VgaCommandBuffer+3], dword 800
+
+        
+
         ret
     WriteToVgaBuffer:
-        
         xor ecx, ecx
         mov cl, [NumberCommands]
         mov eax, 16
@@ -305,7 +341,6 @@ __CommandLineEntry: ; this will looped though the CPU scheduler (Cant change edi
         mov [CommandBuffer+ecx], eax
 
         add [NumberCommands], byte 1
-        
         ret
     IsCommandRunning db 0
     VgaCommandBuffer: times 4 dd 0

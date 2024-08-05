@@ -58,6 +58,7 @@ PrintString: ; string in esi current offset in ebx
 
 _KernelEntry:
 
+    mov esp, 0x1000 ; clears 28168 bytes of space for the kernel
 
     mov ebx, 0
     mov esi, bootmsg

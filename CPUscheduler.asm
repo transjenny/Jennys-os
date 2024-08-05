@@ -16,10 +16,11 @@ CPUschedulerStart:
     
 
     add eax, 16
+    add [CpuCurrentTaskIndex], dword 1
     cmp [CPUTaskBuffer+eax], dword 0 ; check for null dword
     je .ReachedEndOfList
 
-    add [CpuCurrentTaskIndex], dword 1
+    
     
     jmp CPUschedulerStart
     .ReachedEndOfList:
@@ -28,7 +29,7 @@ CPUschedulerStart:
         jmp CPUschedulerStart
 CPUschedulerCycle:; edi is memory address of the func to load
     push edi
-    mov eax, 16
+    mov eax, 30
     mov ecx, [CpuCurrentTaskIndex] ; grab the point in memory to run
     mul ecx
 
@@ -49,17 +50,17 @@ CPUschedulerCycle:; edi is memory address of the func to load
     add edi, 4
     mov esi, [CpuResistorStore+edi]
     
-    mov dh, byte [CpuCurrentTaskIndex]
+    
 
     pop edi
 
-    
+    mov dh, byte [CpuCurrentTaskIndex]
 
     call edi
 
     
 
-    mov eax, 16
+    mov eax, 30
     mov ecx, [CpuCurrentTaskIndex]
     mul ecx
 
@@ -104,7 +105,7 @@ CPUschedulerCycle:; edi is memory address of the func to load
 
     
 
-CpuResistorStore: times 255 dd 0 ; cant have more then 15 tasks or the index gets overflown into
+CpuResistorStore: times 255 dd 0 ; cant have more then 8 tasks or the index gets overflown into
 
 CpuCurrentTaskIndex dd 0
 

@@ -111,16 +111,16 @@ db '~',0
 CreateTab:
     
     mov eax, 4000
-    call Malloc
+    call 08h:Malloc
     mov [VgaBufferSpot], dword eax
 
-    mov eax, __CommandLineEntry
-    call 08h:OpenApp
+    mov eax, __CommandLineEntry ; starting app
+    call 08h:OpenApp ; mallocs the room for the app then copys the app into the malloc
     xor ecx, ecx
     
     add [0x7e05], byte 16
     mov cl, [0x7e05]
-    mov [0x7e06+ecx], dword eax
+    mov [0x7e06+ecx], dword eax ; stuff for cpu scheduler
 
     call 08h:EndOfCommandApp
 
@@ -131,6 +131,15 @@ CreateTab:
 db 0xAA
 db 0xEE
 db 0xFF
+
+db 'reboot', 0x0D, 0
+db 'APPS', 0
+db '~',0
+
+Reboot:
+    jmp 0xFFFF:0 ; cause a error, this forces the computer to reboot as theres no error handling set up atm
+
+db 0xAA,0xEE,0xFF
 
 
 times 25600-($-$$) db 0

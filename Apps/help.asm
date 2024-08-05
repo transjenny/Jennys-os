@@ -28,12 +28,13 @@ HelpCommand:
     mov [VgaCommandBuffer+1], byte 1
     call WriteToVgaBuffer
 
+    
+
 
     popa
     mov eax, 1
     ret
-    ret
     .Ps2DriverName db 'PS2Driver',0
     .RootPath db '~',0
 
-    .helpcommandstr db 'This is a command list built into Jennys Os Using the name "help" help(this),   shutdown thats it | press . to continue',0 
+    .helpcommandstr db 'This is a command list built into Jennys Os Using the name "help" help(this),   shutdown, createtab thats it | press . to continue',0 
